@@ -13,8 +13,8 @@ define("affiliate_id", "********-99*");
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sample - DMM.co.jp</title>
-<meta name="description" content="DMM.co.jpの10円の動画のみを一覧表示するサンプルプログラムです。" />
+<title>API ver3.0 Sample - DMM.R18</title>
+<meta name="description" content="DMM.R18の10円の動画のみを一覧表示するサンプルプログラムです。" />
 <meta name="keywords" content="" />
 <meta name="author" content="Akira Mukai" />
 <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
@@ -183,31 +183,26 @@ if(empty($page)){
 // スタート位置の設定
 $offset = ($page - 1) * 20 + 1;
 
-$baseurl = "http://affiliate-api.dmm.com/";
+$baseurl = "https://api.dmm.com/affiliate/v3/ItemList";
 
 // リクエストのパラメータ作成
 $params = array();
 $params["api_id"] = api_id;
 $params["affiliate_id"] = affiliate_id;
-$params["operation"] = "ItemList";
-$params["version"] = "2.00";
-$params["site"] = "DMM.co.jp";
+$params["site"] = "DMM.R18";
 $params["service"] = "ppm";
 $params["floor"] = "video";
 $params["hits"] = "20";
 $params["offset"] = $offset;
 $params["sort"] = "rank";
+$params["output"] = "xml";
 
-/* 0. 元となるリクエスト */
+/* 1. 元となるリクエスト */
 $base_request = "";
 foreach ($params as $k => $v) {
     $base_request .= "&" . $k . "=" . $v;
 }
 $base_request = $baseurl . "?" . substr($base_request, 1);
-
-/* 1. タイムスタンプを付ける */
-$params["timestamp"] = gmdate("Y-m-d H:i:s");
-$base_request .= "&timestamp=" . $params['timestamp'];
 
 /* 2. 「RFC 3986」形式でエンコーディング */
 $base_request = "";
@@ -217,7 +212,7 @@ foreach ($params as $k => $v) {
 }
 $base_request = $baseurl . "?" . substr($base_request, 1);
 
-$base_request = $base_request . "&keyword=" . urlencode(mb_convert_encoding($key, "EUC-JP", "auto"));
+$base_request = $base_request . "&keyword=" . urlencode(mb_convert_encoding($key, "UTF-8", "auto"));
 
 /* 3. XMLファイルを取得 */
 $dmm_xml = simplexml_load_string(file_get_contents($base_request));
@@ -225,25 +220,20 @@ $dmm_xml = simplexml_load_string(file_get_contents($base_request));
 /* 4. 結果を表示 */
 foreach($dmm_xml->result->items->item as $item) {
 
-  $tag .= "<div class=\"col-sm-6 col-md-4\">\n";
-  $tag .= "\t<div class=\"thumbnail\">\n";
-
   // 出版社
-  $item_publisher = $item->iteminfo->maker->name;
+  $item_publisher = $item->iteminfo->maker->item->name;
 
-  $tag .= "\t\t<h4 class=\"text-center\"><span class=\"label label-primary\">" . $item_publisher . "</span></h4>\n";
-
-  // レーベル
-  $item_label = $item->iteminfo->label->name;
+  // コメント
+  $item_comment = $item->comment;
 
   // 商品名
   $item_title = $item->title;
 
   // 女優名
-  $item_author = $item->iteminfo->actress;
+  $item_author = $item->iteminfo->actress->item;
 
   // 監督
-  $item_director = $item->iteminfo->director;
+  $item_director = $item->iteminfo->director->item;
 
   // 商品へのURL
   if($agent == "pc"){
@@ -261,33 +251,26 @@ foreach($dmm_xml->result->items->item as $item) {
   $item_smallimage = $item->imageURL->small;
 
   // サンプル画像
-  $item_sample = $item->sampleImageURL->sample_s->image;
-  if(empty($item_sample)){
-    $item_sample = $item_img;
-  }
-
+  $item_sample = $item->imageURL->large;
 
   // 価格
   $item_price = $item->prices->price;
 
   // シリーズ
-  $item_series[] = $item->iteminfo->series->name;
+  $item_series[] = $item->iteminfo->series->item->name;
+
+  $tag .= "<div class=\"col-sm-6 col-md-4\">\n";
+  $tag .= "\t<div class=\"thumbnail\">\n";
+
+  $tag .= "\t\t<h4 class=\"text-center\"><span class=\"label label-primary\">" . $item_publisher . "</span></h4>\n";
 
   $tag .= "\t\t<img src=\"" . $item_img . "\" alt=\"" . $item_title . "\" class=\"img-responsive\">\n";
 
   $tag .= "\t\t<div class=\"caption\">\n";
-  $tag .= "\t\t\t<div class=\"row\">\n";
-  $tag .= "\t\t\t\t<div class=\"col-md-6 col-xs-6\">\n";
 
   $tag .= "\t\t\t\t\t<h3>" . $item_title . "</h3>\n";
 
-  $tag .= "\t\t\t\t</div>\n";
-  $tag .= "\t\t\t\t<div class=\"col-md-6 col-xs-6\">\n";
-
-  $tag .= "\t\t\t\t\t<h3><label>￥ " . $item_price . "</label></h3>\n\n";
-
-  $tag .= "\t\t\t\t</div>\n";
-  $tag .= "\t\t\t</div>\n";
+  $tag .= "\t\t\t\t\t<p>" . $item_comment . "</p>\n\n";
 
   // 女優名の表示
   if(!empty($item_author)){
@@ -308,7 +291,7 @@ foreach($dmm_xml->result->items->item as $item) {
     array($item_director);
     $director_list = "";
     for($i = 0; $i < count($item_director); $i++){
-      if($i%3 == 0){
+      if($i%2 == 0){
         $director_list .= "<a href=\"./" . $_SERVER['SCRIPT_NAME'] . "?t=" . urlencode($item_director[$i]->name) . "\">" . $item_director[$i]->name  . "</a> ";
       }else{
 
@@ -317,14 +300,14 @@ foreach($dmm_xml->result->items->item as $item) {
     $tag .= "\t\t\t\t\t<p><i class=\"fa fa-video-camera\"></i> " . trim($director_list) . "</p>\n\n";
   }
 
-  // 日付
-  $item_date = $item->date;
+  // 時間
+  $item_volume = $item->volume;
   if(!empty($item_date)){
-    $tag .= "\t\t\t\t\t<p><i class=\"fa fa-clock-o\"></i> " . $item_date . "</p>\n\n";
+    $tag .= "\t\t\t\t\t<p><i class=\"fa fa-clock-o\"></i> " . $item_volume . " (分)</p>\n\n";
   }
 
   // 商品のタグ
-  $item_tag = $item->iteminfo->keyword;
+  $item_tag = $item->iteminfo->genre->item;
   if(!empty($item_tag)){
     array($item_tag);
     $tag_list = "";
