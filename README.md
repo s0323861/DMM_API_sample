@@ -1,11 +1,8 @@
 ## DMMのAPI(Ver3.0)を使ったサンプルです(PHP)
 
-DMM.R18 10円動画を検索して表示するサンプルソースです。
+DMM.R18(FANZA)の動画を検索して表示するサンプルソースです。
 
-デザインはBootstrap3、Font Awesome Iconsを使っています。
-
-プラグイン(infinitescroll、image-gallery)も使わせていただきました。
-
+デザインはBootstrap4、Font Awesome Iconsを使っています。
 
 ### Usage
 
@@ -21,9 +18,9 @@ DMM.R18 10円動画を検索して表示するサンプルソースです。
 
 ### Demo
 
-  - http://movie.tsukuba42195.top/10yen.php
+  - http://s0323861.moo.jp/adult/
 
 
 ### Licence
 
-  - Copyright 2016 Akira Mukai. Licensed under the MIT License
+  - Copyright 2021 Akira Mukai. Licensed under the MIT License
