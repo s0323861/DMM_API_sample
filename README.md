@@ -15,12 +15,6 @@ DMM.R18(FANZA)の動画を検索して表示するサンプルソースです。
 
   - written in PHP
 
-
-### Demo
-
-  - http://s0323861.moo.jp/adult/
-
-
 ### Licence
 
-  - Copyright 2021 Akira Mukai. Licensed under the MIT License
+  - Licensed under the MIT License
