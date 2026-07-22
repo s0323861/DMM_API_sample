@@ -2,7 +2,11 @@
 
 DMM.R18(FANZA)の動画を検索して表示するサンプルソースです。
 
-デザインはBootstrap4、Font Awesome Iconsを使っています。
+デザインはBootstrap5、Font Awesome Iconsを使っています。
+
+### Demo
+
+[Demo](https://tsukuba42195.sakura.ne.jp/dmm_api/)
 
 ### Usage
 
